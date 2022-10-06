@@ -171,8 +171,8 @@ if (!p5.prototype.originalCreateCanvas_) {
 if (!p5.prototype.originalEllipse_) {
   p5.prototype.originalEllipse_ = p5.prototype.ellipse;
   p5.prototype.ellipse = function(x, y, w, h) {
-    w = (w === undefined) ? 50 : w;
-    h = (h === undefined) ? w : h;
+    w = (w) ? w : 50;
+    h = (w && !h) ? w : h;
     this.originalEllipse_(x, y, w, h);
   };
 }
@@ -181,10 +181,10 @@ if (!p5.prototype.originalEllipse_) {
 // Save the original implementation to allow for optional parameters.
 if (!p5.prototype.originalRect_) {
   p5.prototype.originalRect_ = p5.prototype.rect;
-  p5.prototype.rect = function(x, y, w, h, tl, tr, br, bl) {
-    w = (w === undefined) ? 50 : w;
-    h = (h === undefined) ? w : h;
-    this.originalRect_(x, y, w, h, tl, tr, br, bl);
+  p5.prototype.rect = function(x, y, w, h) {
+    w = (w) ? w : 50;
+    h = (w && !h) ? w : h;
+    this.originalRect_(x, y, w, h);
   };
 }
 
@@ -359,7 +359,6 @@ function getMousePos(canvas, evt) {
 
 // =============================================================================
 //                         p5 extensions
-// eslint-disable-next-line no-warning-comments
 // TODO: It'd be nice to get these accepted upstream in p5
 // =============================================================================
 
@@ -753,7 +752,6 @@ p5.prototype.shape = function() {
   }
   // NOTE: only implemented for non-3D
   if (!this._renderer.isP3D) {
-    // eslint-disable-next-line no-warning-comments
     // TODO: call this._validateParameters, once it is working in p5.js and
     // we understand if it can be used for var args functions like this
     this._renderer.shape.apply(this._renderer, arguments);
@@ -1446,7 +1444,6 @@ function Sprite(pInst, _x, _y, _w, _h) {
   var pop = pInstBind('pop');
   var colorMode = pInstBind('colorMode');
   var tint = pInstBind('tint');
-  var alphaTint = pInstBind('alphaTint');
   var lerpColor = pInstBind('lerpColor');
   var noStroke = pInstBind('noStroke');
   var rectMode = pInstBind('rectMode');
@@ -1725,17 +1722,6 @@ function Sprite(pInst, _x, _y, _w, _h) {
   * @type {Boolean}
   */
   this.mouseIsPressed = false;
-
-  /**
-  * Represents the opacity of the sprite, on a scale from 0 to 1, with 1 being fully
-  * opaque. Default value is 1.
-  * Read only.
-  *
-  * @property alpha
-  * @type {Number}
-  * @default 1
-  */
-  this.alpha = 1;
 
   /*
   * Width of the sprite's current image.
@@ -2521,14 +2507,7 @@ function Sprite(pInst, _x, _y, _w, _h) {
           push();
           tint(this.tint);
         }
-        if(this.alpha < 1) {
-          push();
-          alphaTint(this.alpha);
-        }
         animations[currentAnimation].draw(0, 0, 0);
-        if(this.alpha < 1) {
-          pop();
-        }
         if(this.tint) {
           pop();
         }
@@ -4110,8 +4089,8 @@ p5.prototype.createEdgeSprites = function() {
 
   var edgeThickness = 100;
 
-  var width = this.width;
-  var height = this.height;
+  var width = this._curElement.elt.offsetWidth;
+  var height = this._curElement.elt.offsetHeight;
 
   this.leftEdge = this.createSprite(-edgeThickness / 2, height / 2, edgeThickness, height);
   this.rightEdge = this.createSprite(width + (edgeThickness / 2), height / 2, edgeThickness, height);
@@ -5922,7 +5901,6 @@ p5.prototype._warn = function(message) {
     // A circle has infinite potential candidate axes, so the ones we pick
     // depend on what we're colliding against.
 
-    // eslint-disable-next-line no-warning-comments
     // TODO: If we can ask the other shape for a list of vertices, then we can
     //       generalize this algorithm by always using the closest one, and
     //       remove the special knowledge of OBB and AABB.
